@@ -15,9 +15,15 @@ protected:
 
 public:
 
-    TreapNode(V *value, P *priority) : value(value), priority(priority) {}
+    TreapNode(V *v, P *p) {
+        this->value = v;
+        this->priority = p;
+    }
 
-    TreapNode(V value, P prority) : value(new V(value)), priority(new P(prority)) {}
+    TreapNode(V v, P p) {
+        this->value = new V(v);
+        this->priority = new P(p);
+    }
 
     V *getValue() const {
         return value;
@@ -28,7 +34,7 @@ public:
     }
 
     bool prior(TreapNode<V,P> &node) {
-        return *priority > *(node.priority);
+        return *priority >= *(node.priority);
     }
 
     friend bool operator == (TreapNode<V,P> node1, TreapNode<V,P> node2) {
@@ -75,7 +81,7 @@ public:
     /**
      * Возращает вектор персистентных деревьев, где result[i] - дерево, где вставлены [0, i] элементы items
      */
-    std::vector<PersistentParallelTreap<V, P>*> *insertAll(std::vector<TreapNode<V, P>> items) {
+    std::vector<PersistentParallelTreap<V, P>*> *insertAll(std::vector<TreapNode<V, P>> &items) {
         if (items.empty()) {
             return new std::vector<PersistentParallelTreap<V, P>*>();
         }
@@ -142,11 +148,23 @@ public:
     }
 
     bool isEmpty() {
+        if (this == nullptr) return true;
         return leftChild == nullptr and rightChild == nullptr and value == nullptr;
     }
 
     void setParallelize(bool t) {
         parallelize = t;
+    }
+
+    bool isCorrectHeap() {
+        bool result = true;
+        if (leftChild != nullptr) {
+            result = value->prior(*(leftChild->value)) and leftChild->isCorrectHeap();
+        }
+        if (rightChild != nullptr) {
+            result = result and value->prior(*(rightChild->value)) and rightChild->isCorrectHeap();
+        }
+        return result;
     }
 
     //PersistentParallelTreap<V, P> find(T *value);
@@ -171,13 +189,13 @@ protected:
             if (newValue.prior(*(r->value))) {
                 return new PersistentParallelTreap<V, P>(nullptr, r, newValue);
             }
-            PersistentParallelTreap<V, P> *result = new PersistentParallelTreap<V, P>(r->leftChild, r->rightChild,
-                                                                                      *(r->value));
+            auto *result = new PersistentParallelTreap<V, P>(r->leftChild, r->rightChild, *(r->value));
             PersistentParallelTreap<V, P> *prevTree = result;
             PersistentParallelTreap<V, P> *currentTree = result->leftChild;
             while (currentTree != nullptr and !(currentTree->isEmpty()) and currentTree->value->prior(newValue)) {
                 prevTree->leftChild = new PersistentParallelTreap<V, P>(currentTree->leftChild,
                         currentTree->rightChild, *(currentTree->value));
+                prevTree = prevTree->leftChild;
                 currentTree = currentTree->leftChild;
             }
             prevTree->leftChild = new PersistentParallelTreap<V, P>(nullptr, currentTree, newValue);
@@ -211,7 +229,12 @@ protected:
 
         auto *newLTree = new PersistentParallelTreap<V, P>(l->leftChild, l->rightChild, *(l->value));
         PersistentParallelTreap<V, P> *prevTree = newLTree;
-        PersistentParallelTreap<V, P> *currentTree = prevTree->rightChild;
+        PersistentParallelTreap<V, P> *currentTree = nullptr;
+        if (prevTree->rightChild != nullptr) {
+            currentTree = new PersistentParallelTreap<V, P>(prevTree->rightChild->leftChild,
+                                                            prevTree->rightChild->rightChild,
+                                                            *(prevTree->rightChild->value));
+        }
         if (currentTree == nullptr) {
             prevTree->rightChild = nullptr;
             return join(newLTree->leftChild, r, *(newLTree->value));
@@ -221,7 +244,9 @@ protected:
                                                                     *(currentTree->value));
             prevTree->rightChild = newRightChild;
             prevTree = currentTree;
-            currentTree = currentTree->rightChild;
+            currentTree = new PersistentParallelTreap<V, P>(currentTree->rightChild->leftChild,
+                                                            currentTree->rightChild->rightChild,
+                                                            *(currentTree->rightChild->value));
         }
         prevTree->rightChild = currentTree->leftChild;
         return join(newLTree, r, *(currentTree->value));
@@ -256,13 +281,11 @@ private:
                 insertAllHelperStage2(l, currentIndex - 1, treeNodes, leftPartWithNewItems,
                                       join((*treeNodes)[currentIndex]->rightResultOfSplit, rightPartWithOutNewItems), result);
             }
-            if (r != currentIndex) {
-                insertAllHelperStage2(currentIndex + 1, r, treeNodes,
-                                      join(leftPartWithNewItems,
-                                           (*treeNodes)[currentIndex]->leftChildWithNewItem->insert(
-                                                   *((*treeNodes)[currentIndex]->item))),
-                                      rightPartWithOutNewItems, result);
-            }
+            insertAllHelperStage2(currentIndex + 1, r, treeNodes,
+                                  join(leftPartWithNewItems,
+                                       (*treeNodes)[currentIndex]->leftChildWithNewItem->insert(
+                                               *((*treeNodes)[currentIndex]->item))),
+                                  rightPartWithOutNewItems, result);
 
         } else {
             pasl::pctl::granularity::fork2([&] (){
@@ -273,13 +296,11 @@ private:
                                           result);
                 }
             }, [&] {
-                if (r != currentIndex) {
-                    insertAllHelperStage2(currentIndex + 1, r, treeNodes,
-                                          join(leftPartWithNewItems,
-                                               (*treeNodes)[currentIndex]->leftChildWithNewItem->insert(
-                                                       *((*treeNodes)[currentIndex]->item))),
-                                          rightPartWithOutNewItems, result);
-                }
+                insertAllHelperStage2(currentIndex + 1, r, treeNodes,
+                                      join(leftPartWithNewItems,
+                                           (*treeNodes)[currentIndex]->leftChildWithNewItem->insert(
+                                                   *((*treeNodes)[currentIndex]->item))),
+                                      rightPartWithOutNewItems, result);
             });
         }
 

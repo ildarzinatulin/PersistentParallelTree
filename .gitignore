@@ -16,3 +16,6 @@ cmdline
 lib
 pctl
 .idea
+build-from-comand-line
+*.DS_Store
+.DS_Store

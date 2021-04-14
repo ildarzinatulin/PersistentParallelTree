@@ -8,8 +8,11 @@ include_directories(lib/googletest/googletest/include)
 include_directories(cmdline/include)
 include_directories(pctl/include)
 include_directories(chunkedseq/include)
-include_directories(Trees)
+include_directories(sptl/include)
 
-set(SOURCE_FILES main.cpp Trees/BasicPersistentTree.h Trees/PersistentParallelTreap.h Trees_tests/BasicTreeTest.cpp Trees_tests/TreapTest.cpp)
-add_executable(PersistentParallelTree ${SOURCE_FILES})
-target_link_libraries(PersistentParallelTree gtest gtest_main)
+add_executable(SumMeasuring main.cpp)
+
+add_executable(TreapTest Trees_tests/TreapTest.cpp Trees/PersistentParallelTreap.h)
+target_link_libraries(TreapTest gtest gtest_main)
+
+add_executable(WorkTimeMeasuring WorkTimeMeasuring.cpp Trees/PersistentParallelTreap.h)

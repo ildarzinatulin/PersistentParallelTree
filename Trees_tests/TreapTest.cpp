@@ -3,7 +3,7 @@
 //
 
 #include <gtest/gtest.h>
-#include "PersistentParallelTreap.h"
+#include "../Trees/PersistentParallelTreap.h"
 
 TEST(Treap, insert) {
     int a1 = 5;

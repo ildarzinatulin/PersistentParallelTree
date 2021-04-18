@@ -1,5 +1,5 @@
 #include <iostream>
-#include <spmachine.hpp>
+#include <bench.hpp>
 
 #include "Trees/PersistentParallelTreap.h"
 
@@ -19,15 +19,13 @@ int main(int argc, char** argv) {
     auto *tree = new PersistentParallelTreap<int, int>();
     tree = (*tree->insertAll(*initialValues))[999999];
 
-    for (int i = 1; i < 33; i++) {
-        sptl::launch(argc, argv, i, [&] {
-            auto start = std::chrono::system_clock::now();
-            tree->insertAll(*valuesForAdd);
-            auto end = std::chrono::system_clock::now();
-            std::chrono::duration<float> diff = end - start;
-            printf ("exectime for %d processes %.3lf\n", i, diff.count());
-        });
-    }
+    pbbs::launch(argc, argv, [&] (pbbs::measured_type measured) {
+        auto start = std::chrono::system_clock::now();
+        tree->insertAll(*valuesForAdd);
+        auto end = std::chrono::system_clock::now();
+        std::chrono::duration<float> diff = end - start;
+        printf ("exectime: %.3lf\n", diff.count());
+    });
 
     return 0;
 }

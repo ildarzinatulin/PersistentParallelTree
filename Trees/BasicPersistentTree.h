@@ -259,8 +259,8 @@ private:
             });
         }
 
-        delete resultOfSplit;
         (*treeNodes)[currentIndex] = new InsertNode{leftChildWithNewItems, resultOfSplit->right, &items[currentIndex]};
+        delete resultOfSplit;
         return join(leftChildWithNewItems, rightChildWithNewItems, items[currentIndex]);
     }
 

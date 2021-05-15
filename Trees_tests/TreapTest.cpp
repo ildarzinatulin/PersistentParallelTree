@@ -1,6 +1,7 @@
 //
 // Created by Ildar Zinatulin on 3/13/21.
 //
+/*
 
 #include <gtest/gtest.h>
 #include "../Trees/PersistentParallelTreap.h"
@@ -125,3 +126,4 @@ TEST(BasicTree, insertAll2Parallelize) {
         }
     }
 }
+*/

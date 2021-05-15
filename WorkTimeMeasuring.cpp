@@ -15,13 +15,15 @@ int main(int argc, char** argv) {
     printf("Start treap measuring\n");
 
     pbbs::launch(argc, argv, [&] (pbbs::measured_type measured) {
-        printf ("In laucnh\n");
+        printf ("In launch\n");
 
-        std::vector<TreapNode<int, int>> *initialValues = generateTreapNodes(1000000);
-        std::vector<TreapNode<int, int>> *valuesForAdd = generateTreapNodes(100000);
+        std::vector<TreapNode<int, int>> *initialValues = generateTreapNodes(10000000);
+        std::vector<TreapNode<int, int>> *valuesForAdd = generateTreapNodes(1000000);
         auto *tree = new PersistentParallelTreap<int, int>();
         printf ("Start adding init data\n");
-        tree = (*tree->insertAll(*initialValues))[initialValues->size() - 1];
+        auto trees = (*tree->insertAll(*initialValues));
+        printf ("Trees size: %d\n", trees.size());
+        tree = trees[initialValues->size() - 1];
         printf ("Starting...\n");
 
         auto start = std::chrono::system_clock::now();

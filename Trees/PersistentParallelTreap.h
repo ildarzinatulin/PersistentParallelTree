@@ -74,7 +74,7 @@ public:
         }
         ResultOfSplit *resultOfSplit = split(newValue);
         auto *result = join(resultOfSplit->left, resultOfSplit->right, newValue);
-        delete resultOfSplit;
+        //delete resultOfSplit;
         return result;
     }
 
@@ -306,7 +306,7 @@ private:
 
         (*result)[currentIndex] = join(join(leftPartWithNewItems, (*treeNodes)[currentIndex]->leftChildWithNewItem),
                                        join((*treeNodes)[currentIndex]->rightResultOfSplit, rightPartWithOutNewItems),
-                                       *(*treeNodes)[currentIndex]->item);
+                                       *((*treeNodes)[currentIndex]->item));
     }
 
     PersistentParallelTreap<V, P> *insertAllHelperStage1(PersistentParallelTreap<V, P> *subtree,
@@ -352,8 +352,8 @@ private:
             });
         }
 
-        delete resultOfSplit;
         (*treeNodes)[currentIndex] = new InsertNode{leftChildWithNewItems, resultOfSplit->right, &items[currentIndex]};
+        delete resultOfSplit;
         return join(leftChildWithNewItems, rightChildWithNewItems, items[currentIndex]);
     }
 

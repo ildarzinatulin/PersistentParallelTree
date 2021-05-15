@@ -18,3 +18,4 @@ pctl
 build-from-comand-line
 *.DS_Store
 .DS_Store
+*/.DS_Store

@@ -74,7 +74,7 @@ public:
         }
         ResultOfSplit *resultOfSplit = split(newValue);
         auto *result = join(resultOfSplit->left, resultOfSplit->right, newValue);
-        //delete resultOfSplit;
+        delete resultOfSplit;
         return result;
     }
 
@@ -96,7 +96,7 @@ public:
         ResultOfSplit *resultOfSplit = split(items[currentIndex]);
 
         PersistentParallelTreap<V, P> *leftChildWithNewItems;
-        if (!parallelize) {
+        if (!parallelize or items.size() < maxDepth) {
             leftChildWithNewItems = insertAllHelperStage1(resultOfSplit->left, items, 0, currentIndex - 1,
                                                           treeNodes);
 
@@ -156,6 +156,10 @@ public:
         parallelize = t;
     }
 
+    void setMaxDepth(int d) {
+        maxDepth = d;
+    }
+
     bool isCorrectHeap() {
         bool result = true;
         if (leftChild != nullptr) {
@@ -178,6 +182,7 @@ protected:
     PersistentParallelTreap<V, P> *rightChild = nullptr;
     TreapNode<V, P> *value = nullptr;
     bool parallelize = true;
+    int maxDepth = -1;
 
     PersistentParallelTreap<V, P> *join(PersistentParallelTreap<V, P> *l, PersistentParallelTreap<V, P> *r,
                                         TreapNode<V, P> &newValue) {
@@ -276,7 +281,7 @@ private:
         }
         int currentIndex = l + ((r - l) / 2);
 
-        if (!parallelize) {
+        if (!parallelize or (r - l) < maxDepth) {
             if (l != currentIndex) {
                 insertAllHelperStage2(l, currentIndex - 1, treeNodes, leftPartWithNewItems,
                                       join((*treeNodes)[currentIndex]->rightResultOfSplit, rightPartWithOutNewItems), result);
@@ -324,7 +329,7 @@ private:
         PersistentParallelTreap<V, P> *leftChildWithNewItems = nullptr;
         PersistentParallelTreap<V, P> *rightChildWithNewItems = nullptr;
 
-        if (!parallelize) {
+        if (!parallelize or (r - l) < maxDepth) {
             if (l == currentIndex) {
                 leftChildWithNewItems = resultOfSplit->left;
             } else {

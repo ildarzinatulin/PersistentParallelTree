@@ -18,4 +18,4 @@ add_executable(SumMeasuring main.cpp)
 add_executable(TreapTest Trees_tests/TreapTest.cpp Trees/PersistentParallelTreap.h)
 target_link_libraries(TreapTest gtest gtest_main)
 
-add_executable(WorkTimeMeasuring WorkTimeMeasuring.cpp Trees/PersistentParallelTreap.h)
+add_executable(Insertes Insertes.cpp Trees/PersistentParallelTreap.h)
